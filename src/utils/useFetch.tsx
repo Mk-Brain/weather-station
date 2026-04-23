@@ -1,9 +1,10 @@
 import axios from "axios"
 
 import { useEffect, useState } from "react"
+import type { weatheData } from "./type"
 
 const useFetch = (url: string, api_key: string, town: string, units: string)=>{
-    const [data, setData] = useState()
+    const [data, setData] = useState<weatheData>()
     const [loading, setLoading] = useState(false)
 
     useEffect(()=>{
