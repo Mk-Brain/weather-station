@@ -1,8 +1,15 @@
 import { faMoon } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
+import useFetch from '../../utils/useFetch';
 
 const ResearchPage = () => {
+    const url = 'https://api.openweathermap.org/data/2.5/weather'
+    const api_key = 'f00c38e0279b7bc85480c3fe775d518c'
+    const units = 'metric'
+
+    const {data, loading} = useFetch(url, api_key, 'yaoundé', units)
+
     return (
         <div className='flex flex-col bg-linear-to-r from-blue-300 to-violet-600
                         box-border w-full size-dvh '>
