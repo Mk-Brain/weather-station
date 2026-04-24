@@ -23,6 +23,7 @@ type weatheData = {
         all : number
     }
     visibility : number
+    name: string
 }
 
 export type { weatheData }

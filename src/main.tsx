@@ -10,10 +10,8 @@ const root = document.getElementById('root')
 ReactDOM.createRoot(root!).render(
   <StrictMode>
     <Router>
-      <Header/>
       <Routes>
         <Route path='/' element={<HomePage/>}/>
-        <Route path='/research' element={<ResearchPage/>}/>
         <Route path='*' element={<ErrorPage/>}/>
       </Routes>
     </Router>

@@ -3,31 +3,29 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import type { weatheData } from "./type"
 
-const useFetch = (url: string, api_key: string, town: string, units: string)=>{
+const useFetch = (url: string, params: object)=>{
     const [data, setData] = useState<weatheData>()
     const [loading, setLoading] = useState(false)
+    const [finded, setFinded] = useState(false)
 
     useEffect(()=>{
         axios.get(url,{
-            params: {
-                q: town,
-                appid: api_key,
-                units : units
-            }
+            params: params
         })
         .then((reponse)=>{
+            setFinded(true)
             setData(reponse.data)
         })
         .catch((err)=>{
-            console.log("erreur>>>>>>>>>>>>>>>>>>>>>>>>>>> " + err);
-            
+            console.log("erreur>>>>>>>>>>>>>>>++>>>>>>>>>>>> " + err);
+            setFinded(false)
         })
         .finally(()=>{
             setLoading(false)
         })
-    }, [api_key, town, units, url])
+    }, [params, url])
 
-    return {data, loading}
+    return {data, loading, finded}
 }
 
 export default useFetch

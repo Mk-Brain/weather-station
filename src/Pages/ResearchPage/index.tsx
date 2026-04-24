@@ -2,110 +2,82 @@ import { Oval } from 'react-loader-spinner';
 import React, { useEffect, useState } from 'react';
 
 import axios from "axios"
-import type { weatheData } from "../../utils/type"
+import useFetch from '../../utils/useFetch';
 
 const ResearchPage = () => {
     const url = 'https://api.openweathermap.org/data/2.5/weather'
-    const api_key = 'f00c38e0279b7bc85480c3fe775d518c'
-    const units = 'metric'
 
-    const [data, setData] = useState<weatheData>()
-    const [loading, setLoading] = useState(false)
     const [town, setTown] = useState('')
     const [country, setcountry] = useState([{translations : {fra : {common : ''}}}])
-    const [finded, setFinded] = useState(false)
-    const [position, setPosition] = useState({
-        latitude: '',
-        longitude: '',
-        erreur:''
-    })
     
+    const [paramettres, setParamettres] = useState({})
+    const {data, loading, finded} = useFetch(url, paramettres)
+    
+
+
     function handleChange(e : React.ChangeEvent<HTMLInputElement>){
         setTown(e.target.value)
     }
 
-    function getWheatherData(){
-        axios.get(url,{
-                params: {q: town, appid: api_key, units : units}
-        })
-        .then((reponse)=>{
-            console.log(reponse.status);
-            
-            if(reponse.status == 200)
-                {setFinded(true)
-                setData(reponse.data)}
-            else{
-                setFinded(false)
-            }
-
-        })
-        .catch((err)=>{
-            console.log("erreur>>>>>>>>>>>>>>>>>>>>>>>>>>> " + err);
-            
-        })
-        .finally(()=>{
-            setLoading(false)
-        })
+    function handleClick(){
+           setParamettres({         
+                appid: 'f00c38e0279b7bc85480c3fe775d518c',
+                units: 'metric', 
+                q: town
+            })    
     }
 
-
-        function handleClick(){
-            getWheatherData()
-        }
-
-        useEffect(()=>{
-            async function getCoutry(){
+    useEffect(()=>{
+        async function getCoutry(){
             try {
                 const reponse = await axios.get(`https://restcountries.com/v3.1/alpha/${data?.sys.country}`)    
-                setcountry(reponse.data);
-                
+                setcountry(reponse.data)        
             } catch (error) {
-                console.log(error);
-                
-            }}
+                console.log(error)        
+            }
+        }
             getCoutry()
         },[data?.sys.country])
    
 
     useEffect(()=>{
         function getLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(success, error);
-    } else {
-        console.log("Geolocation is not supported by this browser.");
-    }
-    }
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(success, error);
+        } else {
+            console.log("Geolocation is not supported by this browser.");
+        }
+        }
 
-    function success(position) {
-     setPosition({
-        latitude: position.coords.latitude ,
-        longitude: position.coords.longitude,
-        erreur: ''
-     })
-    }
+        function success(position: { coords: { latitude: unknown; longitude: unknown; }; }) {
+            setParamettres({         
+                appid: 'f00c38e0279b7bc85480c3fe775d518c',
+                units: 'metric', 
+                lat : position.coords.latitude ,
+                lon: position.coords.longitude,
+            })
+        }
 
-    function error(error) {
-    switch(error.code) {
-        case error.PERMISSION_DENIED:
-         console.log("User denied the request for Geolocation.")
-        break;
-        case error.POSITION_UNAVAILABLE:
-         console.log( "Location information is unavailable.")
-        break;
-        case error.TIMEOUT:
-         console.log ("The request to get user location timed out.")
-        break;
-        case error.UNKNOWN_ERROR:
-         console.log ("An unknown error occurred.")
-        break;
-    }
-    }
-    getLocation()
+        function error(error: GeolocationPositionError) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+            console.log("User denied the request for Geolocation.")
+            break;
+            case error.POSITION_UNAVAILABLE:
+            console.log( "Location information is unavailable.")
+            break;
+            case error.TIMEOUT:
+            console.log ("The request to get user location timed out.")
+            break;
+            default: 
+            console.log("unknown error")
+            break;
+        }
+        }
+        getLocation()
     },[])
 
-
     console.log(data)
-    console.log(position);
     console.log(finded)
 
 
@@ -128,7 +100,7 @@ const ResearchPage = () => {
                 finded == false && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>
             }
             <span className='flex flex-row gap-6 m-10 font-mono '>
-                <p className='text-2xl text-gray-200 '>{town}, {country[0].translations.fra.common}</p>
+                <p className='text-2xl text-gray-200 '>{data?.name}, {country[0].translations.fra.common}</p>
                 <p className='text-3xl text-white'>22h30</p>
             </span>
             {loading ? <Oval/> :
