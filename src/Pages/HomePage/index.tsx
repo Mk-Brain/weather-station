@@ -12,6 +12,9 @@ const ResearchPage = () => {
     
     const [paramettres, setParamettres] = useState({})
     const {data, loading, finded} = useFetch(url, paramettres)
+
+    
+    
     
 
 
@@ -77,6 +80,8 @@ const ResearchPage = () => {
         getLocation()
     },[])
 
+    const datetime = data && new Date((data?.dt + data?.timezone) * 1000)
+
     console.log(data)
     console.log(finded)
 
@@ -99,9 +104,9 @@ const ResearchPage = () => {
             {
                 finded == false && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>
             }
-            <span className='flex flex-row gap-6 m-10 font-mono '>
+            <span className='flex flex-row gap-6 m-10 font-mono justify-between'>
                 <p className='text-2xl text-gray-200 '>{data?.name}, {country[0].translations.fra.common}</p>
-                <p className='text-3xl text-white'>22h30</p>
+                <p className='text-3xl text-white'>{datetime?.toUTCString()}</p>
             </span>
             {loading ? <Oval/> :
             <div className='flex flex-row w-250 mx-auto '>

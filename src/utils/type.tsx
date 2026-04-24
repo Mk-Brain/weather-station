@@ -24,6 +24,8 @@ type weatheData = {
     }
     visibility : number
     name: string
+    timezone: number
+    dt: number
 }
 
 export type { weatheData }
