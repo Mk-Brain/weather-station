@@ -11,9 +11,8 @@ const ResearchPage = () => {
     const [country, setcountry] = useState([{translations : {fra : {common : ''}}}])
     
     const [paramettres, setParamettres] = useState({})
-    const {data, loading, finded} = useFetch(url, paramettres)
+    const {data, loading, check} = useFetch(url, paramettres)
 
-    
     
     
 
@@ -23,7 +22,7 @@ const ResearchPage = () => {
     }
 
     function handleClick(){
-           setParamettres({         
+           setParamettres({     
                 appid: 'f00c38e0279b7bc85480c3fe775d518c',
                 units: 'metric', 
                 q: town
@@ -79,11 +78,13 @@ const ResearchPage = () => {
         }
         getLocation()
     },[])
+    
 
     const datetime = data && new Date((data?.dt + data?.timezone) * 1000)
 
+    
+
     console.log(data)
-    console.log(finded)
 
 
     return (
@@ -102,7 +103,7 @@ const ResearchPage = () => {
                 }}>Rechercher</button>
             </div>
             {
-                finded == false && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>
+                check === "nontrouvée" && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>
             }
             <span className='flex flex-row gap-6 m-10 font-mono justify-between'>
                 <p className='text-2xl text-gray-200 '>{data?.name}, {country[0].translations.fra.common}</p>

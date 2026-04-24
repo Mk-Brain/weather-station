@@ -6,26 +6,26 @@ import type { weatheData } from "./type"
 const useFetch = (url: string, params: object)=>{
     const [data, setData] = useState<weatheData>()
     const [loading, setLoading] = useState(false)
-    const [finded, setFinded] = useState(true)
+    const [check, setCheck] = useState('')
 
     useEffect(()=>{
         axios.get(url,{
             params: params
         })
         .then((reponse)=>{
-            setFinded(true)
+            setCheck('trouvée')
             setData(reponse.data)
         })
         .catch((err)=>{
             console.log("erreur>>>>>>>>>>>>>>>++>>>>>>>>>>>> " + err);
-            setFinded(false)
+            setCheck('nontrouvée')
         })
         .finally(()=>{
             setLoading(false)
         })
     }, [params, url])
 
-    return {data, loading, finded}
+    return {data, loading, check}
 }
 
 export default useFetch
