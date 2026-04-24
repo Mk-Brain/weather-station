@@ -19,6 +19,10 @@ type weatheData = {
         sea_level: number
         temp: number
     }
+    clouds : {
+        all : number
+    }
+    visibility : number
 }
 
 export type { weatheData }

@@ -1,7 +1,6 @@
-import { faMoon } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState } from 'react';
-import useFetch from '../../utils/useFetch';
+import { Oval } from 'react-loader-spinner';
+import React, { useEffect, useState } from 'react';
+
 import axios from "axios"
 import type { weatheData } from "../../utils/type"
 
@@ -13,23 +12,32 @@ const ResearchPage = () => {
     const [data, setData] = useState<weatheData>()
     const [loading, setLoading] = useState(false)
     const [town, setTown] = useState('')
-    
-    console.log(data);
+    const [country, setcountry] = useState([{translations : {fra : {common : ''}}}])
+    const [finded, setFinded] = useState(false)
+    const [position, setPosition] = useState({
+        latitude: '',
+        longitude: '',
+        erreur:''
+    })
     
     function handleChange(e : React.ChangeEvent<HTMLInputElement>){
         setTown(e.target.value)
     }
 
-    function handleClick(){
+    function getWheatherData(){
         axios.get(url,{
-            params: {
-                q: town,
-                appid: api_key,
-                units : units
-            }
+                params: {q: town, appid: api_key, units : units}
         })
         .then((reponse)=>{
-            setData(reponse.data)
+            console.log(reponse.status);
+            
+            if(reponse.status == 200)
+                {setFinded(true)
+                setData(reponse.data)}
+            else{
+                setFinded(false)
+            }
+
         })
         .catch((err)=>{
             console.log("erreur>>>>>>>>>>>>>>>>>>>>>>>>>>> " + err);
@@ -40,12 +48,73 @@ const ResearchPage = () => {
         })
     }
 
+
+        function handleClick(){
+            getWheatherData()
+        }
+
+        useEffect(()=>{
+            async function getCoutry(){
+            try {
+                const reponse = await axios.get(`https://restcountries.com/v3.1/alpha/${data?.sys.country}`)    
+                setcountry(reponse.data);
+                
+            } catch (error) {
+                console.log(error);
+                
+            }}
+            getCoutry()
+        },[data?.sys.country])
+   
+
+    useEffect(()=>{
+        function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(success, error);
+    } else {
+        console.log("Geolocation is not supported by this browser.");
+    }
+    }
+
+    function success(position) {
+     setPosition({
+        latitude: position.coords.latitude ,
+        longitude: position.coords.longitude,
+        erreur: ''
+     })
+    }
+
+    function error(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+         console.log("User denied the request for Geolocation.")
+        break;
+        case error.POSITION_UNAVAILABLE:
+         console.log( "Location information is unavailable.")
+        break;
+        case error.TIMEOUT:
+         console.log ("The request to get user location timed out.")
+        break;
+        case error.UNKNOWN_ERROR:
+         console.log ("An unknown error occurred.")
+        break;
+    }
+    }
+    getLocation()
+    },[])
+
+
+    console.log(data)
+    console.log(position);
+    console.log(finded)
+
+
     return (
         <div className='flex flex-col bg-linear-to-r from-blue-300 to-violet-600
-                        box-border w-full size-dvh '>
-            <div>
+                        box-border w-full size-full '>
+            <div className='ml-auto mr-auto'>
                 <input type="text" placeholder='Recherher'
-                className='bg-white m-3 w-130 h-10 rounded-full pl-5 ml-auto mr-auto' 
+                className='bg-white m-3 w-130 h-10 rounded-full pl-5 ' 
                 value={town}
                 onChange={(e)=>{handleChange(e)}} />
                 <button 
@@ -55,30 +124,37 @@ const ResearchPage = () => {
                     handleClick()
                 }}>Rechercher</button>
             </div>
-
+            {
+                finded == false && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>
+            }
             <span className='flex flex-row gap-6 m-10 font-mono '>
-                <p className='text-2xl text-gray-200 '>{town}, {data?.sys.country}</p>
+                <p className='text-2xl text-gray-200 '>{town}, {country[0].translations.fra.common}</p>
                 <p className='text-3xl text-white'>22h30</p>
             </span>
-            <div className='flex flex-row w-200 mx-auto '>
-                <div className='flex-1 w-50 mr-5'>
+            {loading ? <Oval/> :
+            <div className='flex flex-row w-250 mx-auto '>
+                <div className='flex-1 w-50 '>
                     <img 
                     src={`https://openweathermap.org/img/wn/${data?.weather[0].icon}@2x.png`} 
                     alt={data?.weather[0].description} 
-                    className='text-gray-200 mt-5 size-50' />
+                    className='text-gray-200 -mt-9 size-80' />
                 </div>
                 <div className='flex-2  '>
                     <div className='border-b-2 border-white p-5 mb-7'>
                         <h1 className='text-9xl text-white '>{data?.main.temp}°</h1>
-                        <h1 className='text-[6vw] text-white'>{data?.weather[0].description}</h1>
+                        <h1 className='text-7xl text-white'>{data?.weather[0].description}</h1>
                     </div>
                     <div>
-                        <p className='text-gray-200'>humidity : {data?.main.humidity}%</p>
-                        <p className='text-gray-200'>visibility : 10km</p>
-                        <p className='text-gray-200'>wind : {data?.wind.speed}km/h</p>
+                        <p className='text-gray-200'>Ressenti : {data?.main.feels_like}°C</p>
+                        <p className='text-gray-200'>Humidité : {data?.main.humidity}%</p>
+                        <p className='text-gray-200'>Pression : {data?.main.pressure} hPa</p>
+                        <p className='text-gray-200'>Visibilité : {data?.visibility != null ? data.visibility / 1000 : '-'} km</p>
+                        <p className='text-gray-200'>Vent : {data?.wind.speed} km/h</p>
+                        <p className='text-gray-200'>Ciel nuageux à  : {data?.clouds.all}%</p>
+
                     </div>
                 </div>
-            </div>
+            </div>}
         </div>
     );
 };
