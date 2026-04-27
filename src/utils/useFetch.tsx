@@ -12,12 +12,13 @@ const useFetch = (url: string, params: object)=>{
         axios.get(url,{
             params: params
         })
-        .then((reponse)=>{
+        .then((reponse)=>{            
             setCheck('trouvée')
             setData(reponse.data)
         })
         .catch((err)=>{
-            console.log("erreur>>>>>>>>>>>>>>>++>>>>>>>>>>>> " + err);
+            console.log(">>>>>>>>>>>>>>>>>> " + err);
+
             setCheck('nontrouvée')
         })
         .finally(()=>{

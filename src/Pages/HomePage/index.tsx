@@ -3,18 +3,31 @@ import React, { useEffect, useState } from 'react';
 
 import axios from "axios"
 import useFetch from '../../utils/useFetch';
+import { Navigate } from 'react-router-dom';
 
-const ResearchPage = () => {
+const HomePage = () => {
     const url = 'https://api.openweathermap.org/data/2.5/weather'
 
     const [town, setTown] = useState('')
     const [country, setcountry] = useState([{translations : {fra : {common : ''}}}])
-    
     const [paramettres, setParamettres] = useState({})
     const {data, loading, check} = useFetch(url, paramettres)
+    const [isOnline, setIsOnline] = useState(navigator.onLine)
 
     
-    
+    useEffect(()=>{
+        async function handleStatusChange(){
+            setIsOnline(navigator.onLine)
+        }
+
+        window.addEventListener('online', handleStatusChange);
+        window.addEventListener('offline', handleStatusChange);
+
+        return ()=>{
+            window.removeEventListener('online', handleStatusChange);
+            window.removeEventListener('offline', handleStatusChange);
+        }
+    },[isOnline])
 
 
     function handleChange(e : React.ChangeEvent<HTMLInputElement>){
@@ -85,10 +98,15 @@ const ResearchPage = () => {
     
 
     console.log(data)
+    console.log(isOnline)
+    console.log(navigator.onLine)
 
 
     return (
-        <div className='flex flex-col bg-linear-to-r from-blue-300 to-violet-600
+        <>
+        {
+            isOnline ? 
+            <div className='flex flex-col bg-linear-to-r from-blue-300 to-violet-600
                         box-border w-full h-screen '>
             <div className='ml-auto mr-auto'>
                 <input type="text" placeholder='Recherher'
@@ -133,8 +151,10 @@ const ResearchPage = () => {
                     </div>
                 </div>
             </div>}
-        </div>
+        </div> : <Navigate to='/internetSatus'/>
+        }
+        </>
     );
 };
 
-export default ResearchPage;
+export default HomePage;
