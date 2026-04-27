@@ -11,7 +11,7 @@ const HomePage = () => {
     const [town, setTown] = useState('')
     const [country, setcountry] = useState([{translations : {fra : {common : ''}}}])
     const [paramettres, setParamettres] = useState({})
-    const {data, loading, check} = useFetch(url, paramettres)
+    const {data, loading, checkFind} = useFetch(url, paramettres)
     const [isOnline, setIsOnline] = useState(navigator.onLine)
 
     
@@ -65,12 +65,14 @@ const HomePage = () => {
         }
 
         function success(position: { coords: { latitude: unknown; longitude: unknown; }; }) {
-            setParamettres({         
+            if(!town){
+                setParamettres({         
                 appid: 'f00c38e0279b7bc85480c3fe775d518c',
                 units: 'metric', 
                 lat : position.coords.latitude ,
                 lon: position.coords.longitude,
             })
+            }
         }
 
         function error(error: GeolocationPositionError) {
@@ -90,38 +92,53 @@ const HomePage = () => {
         }
         }
         getLocation()
-    },[])
+    },[town])
     
 
     const datetime = data && new Date((data?.dt + data?.timezone) * 1000)
+    const [val, setval] = useState(false)
+    
+    useEffect(()=>{
+        async function changeVal() {
+            if(data?.clouds.all && data?.clouds.all > 50){
+                setval( true)
+            }else{
+                setval(false) 
+            }
+        }
+        
+        changeVal()
+          
+    },[data?.clouds.all])
+
 
     
+    
 
-    console.log(data)
-    console.log(isOnline)
-    console.log(navigator.onLine)
-
+    //console.log(data)
+    //console.log(isOnline)
+    //console.log(navigator.onLine)
+//flex flex-col bg-linear-to-r  from-blue-500 to-violet-800  from-blue-300 to-violet-600 w-full h-screen
 
     return (
         <>
         {
             isOnline ? 
-            <div className='flex flex-col bg-linear-to-r from-blue-300 to-violet-600
-                        box-border w-full h-screen '>
+            <div className={"flex flex-col w-full h-screen box-border bg-linear-to-r ".concat(val ? "from-blue-500 to-violet-800" : "from-blue-300 to-violet-600") }  >
             <div className='ml-auto mr-auto'>
                 <input type="text" placeholder='Recherher'
                 className='bg-white m-3 w-130 h-10 rounded-full pl-5 ' 
                 value={town}
                 onChange={(e)=>{handleChange(e)}} />
                 <button 
-                className='bg-blue-400 p-2 ml-6 text-white text-xl rounded-xl'
+                className='bg-blue-400 p-2 ml-6 text-white text-xl rounded-xl '
                 onClick={(e)=>{
                     e.preventDefault()
                     handleClick()
                 }}>Rechercher</button>
             </div>
             {
-                check === "nontrouvée" && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>
+                checkFind === "nontrouvée" && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>
             }
             <span className='flex flex-row gap-6 m-10 font-mono justify-between'>
                 <p className='text-2xl text-gray-200 '>{data?.name}, {country[0].translations.fra.common}</p>
