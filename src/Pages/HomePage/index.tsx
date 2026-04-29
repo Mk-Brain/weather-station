@@ -11,9 +11,11 @@ const HomePage = () => {
     const [town, setTown] = useState('')
     const [country, setcountry] = useState([{translations : {fra : {common : ''}}}])
     const [paramettres, setParamettres] = useState({})
-    const {data, loading, checkFind} = useFetch(url, paramettres)
+    const {data, checkFind} = useFetch(url, paramettres)
     const [isOnline, setIsOnline] = useState(navigator.onLine)
-
+    const datetime = data && new Date((data?.dt + data?.timezone) * 1000)
+    const [val, setval] = useState(false)
+    const [loading, setLoading] = useState(false)
     
     useEffect(()=>{
         async function handleStatusChange(){
@@ -65,14 +67,14 @@ const HomePage = () => {
         }
 
         function success(position: { coords: { latitude: unknown; longitude: unknown; }; }) {
-            if(!town){
+            
                 setParamettres({         
                 appid: 'f00c38e0279b7bc85480c3fe775d518c',
                 units: 'metric', 
                 lat : position.coords.latitude ,
                 lon: position.coords.longitude,
             })
-            }
+            
         }
 
         function error(error: GeolocationPositionError) {
@@ -91,12 +93,12 @@ const HomePage = () => {
             break;
         }
         }
-        getLocation()
+        if(town.length == 0)
+            getLocation()
     },[town])
     
 
-    const datetime = data && new Date((data?.dt + data?.timezone) * 1000)
-    const [val, setval] = useState(false)
+    
     
     useEffect(()=>{
         async function changeVal() {
@@ -111,20 +113,38 @@ const HomePage = () => {
           
     },[data?.clouds.all])
 
+    useEffect(()=>{
+        function checkLoading(){
+            if(data){
+                setLoading(false)
+            }else{
+                setLoading(true)
+            }
+        }
+        checkLoading()
+    },[data])
+
 
     
-    
+    const style ={
+        display : "flex flex-col w-full h-screen box-border bg-linear-to-r ",
+        bg : val ? "from-blue-500 to-violet-800" : "from-blue-300 to-violet-600"
+    }
 
     //console.log(data)
     //console.log(isOnline)
     //console.log(navigator.onLine)
-//flex flex-col bg-linear-to-r  from-blue-500 to-violet-800  from-blue-300 to-violet-600 w-full h-screen
+    console.log(loading);
+    console.log(town);
+    
+    
+
 
     return (
         <>
         {
             isOnline ? 
-            <div className={"flex flex-col w-full h-screen box-border bg-linear-to-r ".concat(val ? "from-blue-500 to-violet-800" : "from-blue-300 to-violet-600") }  >
+            <div className={`${style.display}${style.bg}`}>
             <div className='ml-auto mr-auto'>
                 <input type="text" placeholder='Recherher'
                 className='bg-white m-3 w-130 h-10 rounded-full pl-5 ' 

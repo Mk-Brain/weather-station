@@ -6,27 +6,31 @@ import type { weatheData } from "./type"
 const useFetch = (url: string, params: object)=>{
     const currentid = useRef(0)
     const [data, setData] = useState<weatheData>()
-    const [loading, setLoading] = useState(false)
+    
     const [checkFind, setcheckFind] = useState('')
     
 
     useEffect(()=>{
         clearInterval(currentid.current)
         function getdata() {
+            
             axios.get(url,{
             params: params
             })
             .then((reponse)=>{            
                 setcheckFind('trouvée')
                 setData(reponse.data)
+                //console.log('ok');
             })
             .catch((err)=>{
                 console.log(">>>>>>>>>>>>>>>>>> " + err);
                 setcheckFind('nontrouvée')
             })
             .finally(()=>{
-                setLoading(false)
+                
             })
+           //console.log('fin');
+            
         }
 
         getdata()
@@ -35,7 +39,7 @@ const useFetch = (url: string, params: object)=>{
        
     }, [params, url])
 
-    return {data, loading, checkFind, }
+    return {data, checkFind, }
 }
 
 export default useFetch
