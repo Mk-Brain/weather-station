@@ -8,6 +8,7 @@ const useFetch = (url: string, params: object)=>{
     const [data, setData] = useState<weatheData>()
     
     const [checkFind, setcheckFind] = useState('')
+    console.log(params);
     
 
     useEffect(()=>{

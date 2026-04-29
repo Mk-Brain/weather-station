@@ -11,11 +11,15 @@ const HomePage = () => {
     const [town, setTown] = useState('')
     const [country, setcountry] = useState([{translations : {fra : {common : ''}}}])
     const [paramettres, setParamettres] = useState({})
-    const {data, checkFind} = useFetch(url, paramettres)
+    
     const [isOnline, setIsOnline] = useState(navigator.onLine)
-    const datetime = data && new Date((data?.dt + data?.timezone) * 1000)
-    const [val, setval] = useState(false)
+    const [cloudCover, setcloudCover] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [xy, setxy] = useState({lat: "", lon: ""})
+
+    const {data, checkFind} = useFetch(url, paramettres)
+
+    const datetime = data && new Date((data?.dt + data?.timezone) * 1000)
     
     useEffect(()=>{
         async function handleStatusChange(){
@@ -59,57 +63,65 @@ const HomePage = () => {
 
     useEffect(()=>{
         function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(success, error);
-        } else {
-            console.log("Geolocation is not supported by this browser.");
-        }
-        }
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(success, error);
+            } else {
+                console.log("Geolocation is not supported by this browser.");
+            }
+            }
 
-        function success(position: { coords: { latitude: unknown; longitude: unknown; }; }) {
-            
-                setParamettres({         
+            function success(position: { coords: { latitude: unknown; longitude: unknown; }; }) {
+                
+                setxy({  ...xy,        
+                    lat : String(position.coords.latitude) ,
+                    lon: String(position.coords.longitude),
+                })
+                
+            }
+
+            function error(error: GeolocationPositionError) {
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        console.log("User denied the request for Geolocation.")
+                    break;
+                    case error.POSITION_UNAVAILABLE:
+                        console.log( "Location information is unavailable.")
+                    break;
+                    case error.TIMEOUT:
+                        console.log ("The request to get user location timed out.")
+                    break;
+                    default: 
+                        console.log("unknown error")
+                    break;
+                }
+            }
+
+            function setParams(){
+                setParamettres({     
                 appid: 'f00c38e0279b7bc85480c3fe775d518c',
                 units: 'metric', 
-                lat : position.coords.latitude ,
-                lon: position.coords.longitude,
+                lat: xy.lat,
+                lon: xy.lon
             })
-            
-        }
-
-        function error(error: GeolocationPositionError) {
-        switch(error.code) {
-            case error.PERMISSION_DENIED:
-            console.log("User denied the request for Geolocation.")
-            break;
-            case error.POSITION_UNAVAILABLE:
-            console.log( "Location information is unavailable.")
-            break;
-            case error.TIMEOUT:
-            console.log ("The request to get user location timed out.")
-            break;
-            default: 
-            console.log("unknown error")
-            break;
-        }
-        }
+            }
+        getLocation()
         if(town.length == 0)
-            getLocation()
-    },[town])
+             setParams()
+    },[town, xy])
     
 
     
     
     useEffect(()=>{
-        async function changeVal() {
+        async function changecloudCover() {
             if(data?.clouds.all && data?.clouds.all > 50){
-                setval( true)
+                setcloudCover( true)
             }else{
-                setval(false) 
+                setcloudCover(false) 
             }
         }
         
-        changeVal()
+        changecloudCover()
           
     },[data?.clouds.all])
 
@@ -128,7 +140,7 @@ const HomePage = () => {
     
     const style ={
         display : "flex flex-col w-full h-screen box-border bg-linear-to-r ",
-        bg : val ? "from-blue-500 to-violet-800" : "from-blue-300 to-violet-600"
+        bg : cloudCover ? "from-blue-500 to-violet-800" : "from-blue-300 to-violet-600"
     }
 
     //console.log(data)
@@ -158,13 +170,14 @@ const HomePage = () => {
                 }}>Rechercher</button>
             </div>
             {
-                checkFind === "nontrouvée" && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>
-            }
+            loading ? <Oval/> :
+            <>
+            {checkFind === "nontrouvée" && <p className='text-red-600 m-auto'>Aucune ville ou pays ne correspond a votre recherche</p>}
             <span className='flex flex-row gap-6 m-10 font-mono justify-between'>
                 <p className='text-2xl text-gray-200 '>{data?.name}, {country[0].translations.fra.common}</p>
                 <p className='text-3xl text-white'>{datetime?.toUTCString()}</p>
             </span>
-            {loading ? <Oval/> :
+            
             <div className='flex flex-row w-250 mx-auto '>
                 <div className='flex-1 w-50 '>
                     <img 
@@ -187,7 +200,8 @@ const HomePage = () => {
 
                     </div>
                 </div>
-            </div>}
+            </div>
+            </>}
         </div> : <Navigate to='/internetSatus'/>
         }
         </>
